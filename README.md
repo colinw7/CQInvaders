@@ -1,0 +1,4 @@
+CQInvaders
+==========
+
+Qt Space Invaders
