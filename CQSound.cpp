@@ -1,5 +1,6 @@
 #include <CQSound.h>
 #include <QSound>
+#include <QAudioDeviceInfo>
 #include <CSDLSound.h>
 
 CQSoundMgr *
@@ -25,7 +26,8 @@ CQSoundMgr::
 CQSoundMgr() :
  active_(true), qsound_(false), sdl_sound_(0)
 {
-  qsound_ = QSound::isAvailable();
+  //qsound_ = QSound::isAvailable();
+  qsound_ = ! QAudioDeviceInfo::availableDevices(QAudio::AudioOutput).isEmpty();
 }
 
 CQSound *

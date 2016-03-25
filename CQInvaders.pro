@@ -2,7 +2,7 @@ TEMPLATE = app
 
 TARGET = CQInvaders
 
-QT += widgets
+QT += widgets multimedia
 
 DEPENDPATH += .
 
@@ -12,4 +12,4 @@ INCLUDEPATH += .
 HEADERS += CQSpaceInvaders.h CSpaceInvaders.h CQSound.h CSDLSound.h
 SOURCES += CQSpaceInvaders.cpp CQSound.cpp CSDLSound.cpp
 
-unix:LIBS += -lSDL -lSDL_mixer
+unix:LIBS += -lSDL2 -lSDL2_mixer
