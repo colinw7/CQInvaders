@@ -18,6 +18,7 @@ class CQSpaceInvaders : public QWidget {
   void timerSlot();
 
  private:
-  int             w_, h_;
-  CSpaceInvaders *invaders_;
+  CSpaceInvaders* invaders_ { nullptr };
+  int             w_        { -1 };
+  int             h_        { -1 };
 };

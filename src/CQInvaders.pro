@@ -6,6 +6,8 @@ QT += widgets multimedia
 
 DEPENDPATH += .
 
+QMAKE_CXXFLAGS += -std=c++14
+
 INCLUDEPATH += .
 
 # Input

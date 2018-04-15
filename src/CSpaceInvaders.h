@@ -7,16 +7,23 @@
 #define SCREEN_HEIGHT 1000
 
 struct Point {
-  Point(int x1=0, int y1=0) :
-   x(x1), y(y1) {
+  Point() = default;
+
+  Point(int x, int y) :
+   x(x), y(y) {
   }
 
-  int x, y;
+  int x { 0 };
+  int y { 0 };
 };
 
+//---
+
 struct Rect {
-  Rect(int x1_, int y1_, int x2_, int y2_) :
-   x1(x1_), y1(y1_), x2(x2_), y2(y2_) {
+  Rect() = default;
+
+  Rect(int x1, int y1, int x2, int y2) :
+   x1(x1), y1(y1), x2(x2), y2(y2) {
   }
 
   bool overlaps(const Rect &rect) const {
@@ -26,8 +33,11 @@ struct Rect {
     return true;
   }
 
-  int x1, y1, x2, y2;
+  int x1 { 0 }, y1 { 0 };
+  int x2 { 0 }, y2 { 0 };
 };
+
+//---
 
 struct Util {
   static double random() {
@@ -35,9 +45,11 @@ struct Util {
   }
 };
 
+//---
+
 class ImageList {
  public:
-  ImageList() : ind_(0) { }
+  ImageList() { }
 
   void addImage(Image *i) { images_.push_back(i); }
 
@@ -51,14 +63,18 @@ class ImageList {
   }
 
  private:
-  int                  ind_;
-  std::vector<Image *> images_;
+  using Images = std::vector<Image *>;
+
+  int    ind_ { 0 };
+  Images images_;
 };
+
+//---
 
 class Graphic {
  public:
   Graphic(const Point &pos, int w, int h) :
-   pos_(pos), w_(w), h_(h), dead_(false) {
+   pos_(pos), w_(w), h_(h) {
   }
 
   virtual ~Graphic() { }
@@ -80,23 +96,24 @@ class Graphic {
   void reset() { dead_ = false; }
 
   bool isDead() const { return dead_; }
-
   void setDead(bool dead=true) { dead_ = dead; }
 
   Rect rect() const { return Rect(pos_.x - w_/2, pos_.y - h_/2, pos_.x + w_/2, pos_.y + h_/2); }
 
  protected:
-  Point     pos_;
+  Point     pos_  { 0, 0 };
   ImageList images_;
-  int       w_;
-  int       h_;
-  bool      dead_;
+  int       w_    { 0 } ;
+  int       h_    { 0 } ;
+  bool      dead_ { false };
 };
+
+//---
 
 class ExplodeGraphic : public Graphic {
  public:
   ExplodeGraphic(const Point &pos, int w, int h) :
-   Graphic(pos, w, h), exploding_(0) {
+   Graphic(pos, w, h) {
   }
 
   bool isExploding() const { return exploding_ > 0; }
@@ -128,9 +145,11 @@ class ExplodeGraphic : public Graphic {
   }
 
  protected:
-  int       exploding_;
+  int       exploding_ { 0 };
   ImageList explodeImages_;
 };
+
+//---
 
 class Bullet : public Graphic {
  public:
@@ -142,6 +161,8 @@ class Bullet : public Graphic {
 
   virtual void update() = 0;
 };
+
+//---
 
 class Alien;
 
@@ -163,8 +184,10 @@ class AlienBullet : public Bullet {
   }
 
  private:
-  Alien *alien_;
+  Alien *alien_ { nullptr };
 };
+
+//---
 
 class Player;
 
@@ -186,8 +209,10 @@ class PlayerBullet : public Bullet {
   }
 
  private:
-  Player *player_;
+  Player *player_ { nullptr };
 };
+
+//---
 
 class CSpaceInvaders;
 
@@ -197,14 +222,14 @@ class AlienManager {
 
  public:
   AlienManager(CSpaceInvaders *invaders) :
-   invaders_(invaders), dir_(1), speed_(8), w_(48), numAlive_(0), needsIncRow_(false) {
+   invaders_(invaders) {
     for (int y = 0; y < 5; ++y)
       row_y_[y] = y*60 + 110;
 
     bullets_.resize(NUM_BULLETS);
 
     for (uint i = 0; i < NUM_BULLETS; ++i)
-      bullets_[i] = NULL;
+      bullets_[i] = nullptr;
   }
 
   void reset() {
@@ -216,7 +241,7 @@ class AlienManager {
     for (uint i = 0; i < NUM_BULLETS; ++i) {
       delete bullets_[i];
 
-      bullets_[i] = NULL;
+      bullets_[i] = nullptr;
     }
   }
 
@@ -230,7 +255,7 @@ class AlienManager {
 
   int getSpeed() const { return speed_/4; }
 
-  void needsIncRow() { needsIncRow_ = true; }
+  void setNeedsIncRow(bool b=true) { needsIncRow_ = b; }
 
   void preUpdate();
 
@@ -244,9 +269,8 @@ class AlienManager {
 
   void draw() {
     for (uint i = 0; i < NUM_BULLETS; ++i) {
-      if (bullets_[i] == NULL) continue;
-
-      bullets_[i]->draw();
+      if (bullets_[i])
+        bullets_[i]->draw();
     }
   }
 
@@ -255,20 +279,22 @@ class AlienManager {
  private:
   typedef std::vector<AlienBullet *> BulletList;
 
-  CSpaceInvaders *invaders_;
+  CSpaceInvaders *invaders_    { nullptr };
   int             row_y_[5];
-  int             dir_;
-  int             speed_;
-  int             w_;
-  int             numAlive_;
-  bool            needsIncRow_;
+  int             dir_         { 1 };
+  int             speed_       { 8 };
+  int             w_           { 48 };
+  int             numAlive_    { 0 };
+  bool            needsIncRow_ { false };
   BulletList      bullets_;
 };
+
+//---
 
 class Alien : public ExplodeGraphic {
  public:
   Alien(AlienManager *mgr, int col, int row, const Point &pos, int w, int h) :
-   ExplodeGraphic(pos, w, h), mgr_(mgr), col_(col), row_(row), imageCount_(4) {
+   ExplodeGraphic(pos, w, h), mgr_(mgr), col_(col), row_(row) {
     dieSound_ = App::loadSound("sounds/invaderkilled.wav");
 
     explodeImages_.addImage(App::loadImage("images/explode1.png"));
@@ -297,12 +323,14 @@ class Alien : public ExplodeGraphic {
   void checkHit(PlayerBullet *bullet);
 
  private:
-  AlienManager *mgr_;
-  int           col_;
-  int           row_;
-  int           imageCount_;
-  Sound        *dieSound_;
+  AlienManager *mgr_        { nullptr };
+  int           col_        { 0 };
+  int           row_        { 0 };
+  int           imageCount_ { 4 };
+  Sound        *dieSound_   { nullptr };
 };
+
+//---
 
 class Alien1 : public Alien {
  public:
@@ -315,6 +343,8 @@ class Alien1 : public Alien {
   int getScore() const { return 30; }
 };
 
+//---
+
 class Alien2 : public Alien {
  public:
   Alien2(AlienManager *mgr, int col, int row, const Point &pos) :
@@ -326,6 +356,8 @@ class Alien2 : public Alien {
   int getScore() const { return 20; }
 };
 
+//---
+
 class Alien3 : public Alien {
  public:
   Alien3(AlienManager *mgr, int col, int row, const Point &pos) :
@@ -336,6 +368,8 @@ class Alien3 : public Alien {
 
   int getScore() const { return 10; }
 };
+
+//---
 
 class MysteryAlien : public ExplodeGraphic {
  private:
@@ -384,14 +418,16 @@ class MysteryAlien : public ExplodeGraphic {
   void checkHit(PlayerBullet *bullet);
 
  private:
-  CSpaceInvaders *invaders_;
-  Sound          *dieSound_;
+  CSpaceInvaders *invaders_ { nullptr };
+  Sound          *dieSound_ { nullptr };
 };
+
+//---
 
 class Score {
  public:
   Score(const Point &pos) :
-   pos_(pos), score_(0) {
+   pos_(pos) {
   }
 
   void add(int i) { score_ += i; }
@@ -410,8 +446,10 @@ class Score {
 
  private:
   Point pos_;
-  int   score_;
+  int   score_ { 0 };
 };
+
+//---
 
 class Player : public Graphic {
  private:
@@ -428,7 +466,7 @@ class Player : public Graphic {
     bullets_.resize(NUM_BULLETS);
 
     for (uint i = 0; i < NUM_BULLETS; ++i)
-      bullets_[i] = NULL;
+      bullets_[i] = nullptr;
 
     fireSound_ = App::loadSound("sounds/shoot.wav");
     dieSound_  = App::loadSound("sounds/explosion.wav");
@@ -443,7 +481,7 @@ class Player : public Graphic {
     for (uint i = 0; i < NUM_BULLETS; ++i) {
       delete bullets_[i];
 
-      bullets_[i] = NULL;
+      bullets_[i] = nullptr;
     }
   }
 
@@ -469,9 +507,8 @@ class Player : public Graphic {
     Graphic::draw();
 
     for (uint i = 0; i < NUM_BULLETS; ++i) {
-      if (bullets_[i] == NULL) continue;
-
-      bullets_[i]->draw();
+      if (bullets_[i])
+        bullets_[i]->draw();
     }
 
     char str[64];
@@ -488,23 +525,25 @@ class Player : public Graphic {
  private:
   typedef std::vector<PlayerBullet *> BulletList;
 
-  CSpaceInvaders *invaders_;
-  int             lives_;
-  int             d_;
-  int             fire_block_;
+  CSpaceInvaders *invaders_   { nullptr };
+  int             lives_      { 0 };
+  int             d_          { 0 };
+  int             fire_block_ { 0 };
   BulletList      bullets_;
-  Sound          *fireSound_;
-  Sound          *dieSound_;
+  Sound          *fireSound_  { nullptr };
+  Sound          *dieSound_   { nullptr };
 };
+
+//---
 
 class Base : public Graphic {
  private:
   struct Cell {
     ImageList images;
-    int       ind;
-    bool      dead;
+    int       ind  { 0 };
+    bool      dead { false };
 
-    Cell() : ind(0), dead() { }
+    Cell() { }
 
     void hit() { images.next(); ++ind; if (ind >= 4) dead = true; }
 
@@ -597,9 +636,9 @@ class Base : public Graphic {
 
         Cell &cell = grid_[r][c];
 
-        Rect r(x1, y1, x2, y2);
+        Rect rect(x1, y1, x2, y2);
 
-        if (bullet->rect().overlaps(r)) {
+        if (bullet->rect().overlaps(rect)) {
           if (cell.dead) continue;
 
           cell.hit();
@@ -614,11 +653,11 @@ class Base : public Graphic {
   Cell grid_[2][4];
 };
 
+//---
+
 class Level {
  public:
-  Level() :
-   value_(1) {
-  }
+  Level() { }
 
   void draw() {
     char str[64];
@@ -631,13 +670,14 @@ class Level {
   void reset() { value_ = 1; }
 
  private:
-  int value_;
+  int value_ { 1 };
 };
+
+//---
 
 class CSpaceInvaders {
  public:
-  CSpaceInvaders() :
-   paused_(false), gameOver_(false) {
+  CSpaceInvaders()  {
     init();
   }
 
@@ -667,8 +707,11 @@ class CSpaceInvaders {
 
     player_->draw();
 
-    std::for_each(aliens_ .begin(), aliens_.end(), std::mem_fun(&Alien::draw));
-    std::for_each(bases_  .begin(), bases_ .end(), std::mem_fun(&Base ::draw));
+    for (auto &alien : aliens_)
+      alien->draw();
+
+    for (auto &base : bases_)
+      base->draw();
 
     alienMgr_->draw();
 
@@ -685,7 +728,8 @@ class CSpaceInvaders {
 
     alienMgr_->preUpdate();
 
-    std::for_each(aliens_ .begin(), aliens_.end(), std::mem_fun(&Alien::update));
+    for (auto &alien : aliens_)
+      alien->update();
 
     alienMgr_->postUpdate();
 
@@ -735,8 +779,8 @@ class CSpaceInvaders {
   }
 
   void checkAlienHit(PlayerBullet *bullet) {
-    std::for_each(aliens_.begin(), aliens_.end(),
-                  std::bind2nd(std::mem_fun(&Alien::checkHit), bullet));
+    for (auto &alien : aliens_)
+      alien->checkHit(bullet);
 
     alienMgr_->checkHit(bullet);
 
@@ -748,8 +792,8 @@ class CSpaceInvaders {
   }
 
   void checkBaseHit(Bullet *bullet) {
-    std::for_each(bases_.begin(), bases_.end(),
-                  std::bind2nd(std::mem_fun(&Base::checkHit), bullet));
+    for (auto &base : bases_)
+      base->checkHit(bullet);
   }
 
   void addScore(int score) {
@@ -760,15 +804,16 @@ class CSpaceInvaders {
     paused_ = ! paused_;
   }
 
-  void gameOver() {
-    gameOver_ = true;
+  void setGameOver(bool b=true) {
+    gameOver_ = b;
   }
 
   void nextLevel() {
     paused_   = false;
     gameOver_ = false;
 
-    std::for_each(aliens_ .begin(), aliens_.end(), std::mem_fun(&Alien::reset));
+    for (auto &alien : aliens_)
+      alien->reset();
 
     alienMgr_->reset();
 
@@ -787,8 +832,11 @@ class CSpaceInvaders {
 
     player_->reset();
 
-    std::for_each(aliens_ .begin(), aliens_.end(), std::mem_fun(&Alien::reset));
-    std::for_each(bases_  .begin(), bases_ .end(), std::mem_fun(&Base ::reset));
+    for (auto &alien : aliens_)
+      alien->reset();
+
+    for (auto &base : bases_)
+      base->reset();
 
     alienMgr_->reset();
   }
@@ -797,15 +845,15 @@ class CSpaceInvaders {
   typedef std::vector<Alien *> AlienList;
   typedef std::vector<Base *>  BaseList;
 
-  Player       *player_;
+  Player       *player_       { nullptr };
   Level         level_;
-  Score        *score_;
-  AlienManager *alienMgr_;
+  Score        *score_        { nullptr };
+  AlienManager *alienMgr_     { nullptr };
   AlienList     aliens_;
-  MysteryAlien *mysteryAlien_;
+  MysteryAlien *mysteryAlien_ { nullptr };
   BaseList      bases_;
-  bool          paused_;
-  bool          gameOver_;
+  bool          paused_       { false };
+  bool          gameOver_     { false };
 };
 
 //--------------
@@ -817,7 +865,7 @@ fire()
   if (fire_block_ > 0) return;
 
   for (uint i = 0; i < NUM_BULLETS; ++i) {
-    if (bullets_[i] != NULL) continue;
+    if (bullets_[i]) continue;
 
     bullets_[i] = new PlayerBullet(this, Point(pos_.x, pos_.y - h_/2));
 
@@ -836,7 +884,7 @@ update()
   if (fire_block_ > 0) --fire_block_;
 
   for (uint i = 0; i < NUM_BULLETS; ++i) {
-    if (bullets_[i] == NULL) continue;
+    if (! bullets_[i]) continue;
 
     bullets_[i]->update();
 
@@ -849,7 +897,7 @@ update()
     if (bullets_[i]->isDead()) {
       delete bullets_[i];
 
-      bullets_[i] = NULL;
+      bullets_[i] = nullptr;
     }
   }
 }
@@ -870,7 +918,7 @@ checkHit(AlienBullet *bullet)
     bullet->setDead();
 
     if (lives_ <= 0)
-      invaders_->gameOver();
+      invaders_->setGameOver();
   }
 }
 
@@ -909,7 +957,7 @@ AlienManager::
 update()
 {
   for (uint i = 0; i < NUM_BULLETS; ++i) {
-    if (bullets_[i] == NULL) continue;
+    if (! bullets_[i]) continue;
 
     bullets_[i]->update();
 
@@ -922,7 +970,7 @@ update()
     if (bullets_[i]->isDead()) {
       delete bullets_[i];
 
-      bullets_[i] = NULL;
+      bullets_[i] = nullptr;
     }
   }
 }
@@ -934,7 +982,7 @@ fire(Alien *alien)
   const Point &pos = alien->getPos();
 
   for (uint i = 0; i < NUM_BULLETS; ++i) {
-    if (bullets_[i] != NULL) continue;
+    if (bullets_[i]) continue;
 
     bullets_[i] = new AlienBullet(alien, Point(pos.x, pos.y + 24));
 
@@ -949,12 +997,12 @@ checkHit(PlayerBullet *bullet)
   if (bullet->isDead()) return;
 
   for (uint i = 0; i < NUM_BULLETS; ++i) {
-    if (bullets_[i] == NULL) continue;
+    if (! bullets_[i]) continue;
 
     if (bullet->rect().overlaps(bullets_[i]->rect())) {
       delete bullets_[i];
 
-      bullets_[i] = NULL;
+      bullets_[i] = nullptr;
 
       bullet->setDead();
 
@@ -1001,12 +1049,12 @@ update()
   if (pos_.x >= SCREEN_WIDTH - hs) {
     //pos_.x = SCREEN_WIDTH - hs - 1;
 
-    mgr_->needsIncRow();
+    mgr_->setNeedsIncRow();
   }
   else if (pos_.x < hs) {
     //pos_.x = hs;
 
-    mgr_->needsIncRow();
+    mgr_->setNeedsIncRow();
   }
 
   --imageCount_;
@@ -1022,7 +1070,8 @@ update()
 
   mgr_->incAlive();
 
-  if (mgr_->getRowY(row_) > 900) mgr_->getInvaders()->gameOver();
+  if (mgr_->getRowY(row_) > 900)
+    mgr_->getInvaders()->setGameOver();
 }
 
 //--------------

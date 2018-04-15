@@ -75,7 +75,7 @@ CQSpaceInvaders()
 
   connect(timer, SIGNAL(timeout()), this, SLOT(timerSlot()));
 
-  timer->start(100);
+  timer->start(1000.0/60.0);
 }
 
 void
