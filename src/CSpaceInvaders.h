@@ -176,6 +176,8 @@ class AlienBullet : public Bullet {
     addImage(App::loadImage("images/bullet2a.png"));
   }
 
+  Alien *alien() const { return alien_; }
+
   void update() {
     pos_.y += DY;
 
@@ -200,6 +202,8 @@ class PlayerBullet : public Bullet {
    Bullet(pos, 4, 26), player_(player) {
     addImage(App::loadImage("images/bullet1a.png"));
   }
+
+  Player *player() const { return player_; }
 
   void update() {
     pos_.y -= DY;
