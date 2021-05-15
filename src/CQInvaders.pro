@@ -14,4 +14,7 @@ INCLUDEPATH += .
 HEADERS += CQSpaceInvaders.h CSpaceInvaders.h CQSound.h CSDLSound.h
 SOURCES += CQSpaceInvaders.cpp CQSound.cpp CSDLSound.cpp
 
+DESTDIR     = ../bin
+OBJECTS_DIR = ../obj
+
 unix:LIBS += -lSDL2 -lSDL2_mixer
